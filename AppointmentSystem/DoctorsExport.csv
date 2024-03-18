@@ -1,0 +1,8 @@
+Name,Gender,HospitalName,HospitalId,SpecialtyId,BranchId,Nationality,DoctorId,CreatedAt
+Mr. Ahmet Öz,Erkek,Medicana Avcilar,150,81036,29532.99,TUR,1,01/13/2022 01:54:46
+Ahmet Pınar,Erkek,Medicana Avcilar,150,81036,29532.99,TUR,2,04/29/2022 02:25:52
+Yasemin Öztürk,Kadın,MedicalPark İzmir,160,81036,45145.08,TUR,3,12/29/2021 20:34:25
+Kübra Işık,Kadın,MedicalPark Kadiköy,160,18741,49875.59,TUR,4,04/30/2022 04:05:06
+Aynur Aslan,Kadın,Medicana Sisli,150,20746,19747.48,TUR,5,05/27/2021 21:24:21
+Hamdi Öztürk,Erkek,Medicana Sisli,23701,9090,19747.48,TUR,7,06/14/2021 18:01:30
+Aysun Çoşkun,Kadın,Ege Hastanesi,1058,82688,5663.64,TUR,9,03/12/2022 15:47:42
