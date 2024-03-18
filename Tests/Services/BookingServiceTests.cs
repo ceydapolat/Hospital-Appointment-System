@@ -12,8 +12,6 @@ public class BookingServiceTests
     [Fact]
     public async Task BookVisitAsync_SuccessfulBooking_ReturnsBookingResponse()
     {
-        //Could not test this since the endpoint does not work
-
         // Arrange
         var mockDoctorService = new Mock<IDoctorService>();
         var mockLogger = new Mock<ILoggerService>();
