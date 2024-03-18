@@ -40,8 +40,8 @@ public class DoctorsControllerTests
         var controller = new DoctorsController(mockDoctorService.Object);
 
         // Act
-        var result = await controller.GetAvailableSlots(1); // Pass a doctorId for testing
-
+        var result = await controller.GetAvailableSlots(1);
+        
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
         var model = Assert.IsAssignableFrom<IEnumerable<VisitSlot>>(okResult.Value);
@@ -53,7 +53,7 @@ public class DoctorsControllerTests
     {
         // Arrange
         var mockDoctorService = new Mock<IDoctorService>();
-        mockDoctorService.Setup(repo => repo.ExportTurkishDoctorsToCsvAsync())
+        mockDoctorService.Setup(x => x.ExportTurkishDoctorsToCsvAsync())
             .Returns(Task.CompletedTask); // Simulate successful export
 
         var controller = new DoctorsController(mockDoctorService.Object);
