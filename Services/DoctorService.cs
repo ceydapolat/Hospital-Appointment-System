@@ -10,32 +10,39 @@ namespace Services
     {
         private readonly HttpClient _httpClient;
         private readonly ILoggerService _logger;
+        private IEnumerable<Doctor> _doctors; // Cache for doctors
 
-        public DoctorService(HttpClient httpClient)
+        public DoctorService(HttpClient httpClient, ILoggerService logger)
         {
             _httpClient = httpClient;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<Doctor>> GetDoctorsAsync()
         {
             try
             {
-                var response = await _httpClient.GetAsync("https://3aff8cc7-91f8-4577-bef3-e566d6c41d74.mock.pstmn.io/fetchDoctors");
-
-                if (response.IsSuccessStatusCode)
+                if (_doctors is null)
                 {
-                    var jsonResponse = await response.Content.ReadAsStringAsync();
-                    var responseObject = JObject.Parse(jsonResponse);
-                    var doctorArray = responseObject["data"].ToObject<List<Doctor>>();
+                    var response = await _httpClient.GetAsync("https://fe8f4f5e-f5c2-48b6-974c-097f4cec3de0.mock.pstmn.io/fetchDoctors");
 
-                    return doctorArray;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var jsonResponse = await response.Content.ReadAsStringAsync();
+                        var responseObject = JObject.Parse(jsonResponse);
+                        _doctors = responseObject["data"].ToObject<List<Doctor>>();
+                    }
+                    else
+                    {
+                        _logger.LogError($"Failed to fetch doctors. Status code: {response.StatusCode}");
+                    }
                 }
 
-                _logger.LogError($"Failed to fetch doctors. Status code: {response.StatusCode}");
+                return _doctors;
             }
-            catch (Exception ex)
+            catch
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError("Failed to fetch doctors");
             }
 
 
@@ -46,12 +53,19 @@ namespace Services
         {
             var doctors = await GetDoctorsAsync();
 
-            var docExists = doctors.Any(d => d.DoctorId == doctorId);
+            if (doctors is not null)
+            {
+                var docExists = doctors.Any(d => d.DoctorId == doctorId);
 
-            if (docExists is false)
-                return null;
+                if (docExists is false)
+                {
+                    _logger.LogError($"No doctor with this doctor ID could be found.");
 
-            var response = await _httpClient.GetAsync($"https://3aff8cc7-91f8-4577-bef3-e566d6c41d74.mock.pstmn.io/fetchSchedules?doctorId={doctorId}");
+                    return null;
+                }
+            }
+
+            var response = await _httpClient.GetAsync($"https://fe8f4f5e-f5c2-48b6-974c-097f4cec3de0.mock.pstmn.io/fetchSchedules?doctorId={doctorId}");
 
             if (response.IsSuccessStatusCode)
             {

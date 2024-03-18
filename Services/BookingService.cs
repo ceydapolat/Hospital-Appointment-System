@@ -21,7 +21,7 @@ namespace Services
         {
             var doctorId = await _doctorService.GetDoctorIdByDoctorNameAsync(request.DoctorName);
 
-            if(doctorId == default)
+            if (doctorId == default)
                 return new BookingResponse { Status = false };
 
             var doctorInfo = await _doctorService.GetDoctorInfoByDoctorIdAsync(doctorId);
@@ -29,27 +29,20 @@ namespace Services
             if (doctorInfo.HospitalId == null || doctorInfo.BranchId == null)
                 return new BookingResponse { Status = false };
 
-            var formattedDate = DateTime.ParseExact(request.Date, "dd/MM/yyyy", null).ToString("yyyy-MM-dd");
+            var formattedDate = FormatDate(request.Date);
+            var startTime = GetFormattedDateTime(formattedDate, request.StartTime);
+            var endTime = GetFormattedDateTime(formattedDate, request.EndTime);
 
-            var startTime = formattedDate + "T" + request.StartTime + ":00.000Z";
-            var endTime = formattedDate + "T" + request.EndTime + ":00.000Z";
-
-            var slots = await _doctorService.GetAvailableSlotsAsync(doctorId);
-            var slot = slots.Where(s =>
-                s.StartTimeUtcString == startTime &&
-                s.EndTimeUtcString == endTime &&
-                s.DoctorId == doctorId).FirstOrDefault();
+            var slot = await GetAvailableSlotAsync(doctorId, startTime, endTime);
 
             if (slot is null)
                 return new BookingResponse { Status = false };
 
-            // Split patient name into PatientName and PatientSurname
-            string[] nameParts = request.PatientName.Split(' ');
-            string patientName = nameParts[0];
-            string patientSurname = nameParts.Length > 1 ? nameParts[1] : "";
+            var patientName = ExtractPatientName(request.PatientName);
+            var patientSurname = ExtractPatientSurname(request.PatientName);
 
             // Construct the URL based on the request parameters
-            var baseUrl = "https://3aff8cc7-91f8-4577-bef3-e566d6c41d74.mock.pstmn.io/BookVisit";
+            var baseUrl = "https://fe8f4f5e-f5c2-48b6-974c-097f4cec3de0.mock.pstmn.io/BookVisit";
             var queryParams = new Dictionary<string, string>
                 {
                     { "VisitId", slot.VisitId.ToString() },
@@ -71,16 +64,20 @@ namespace Services
             {
                 var content = await response.Content.ReadAsStringAsync();
                 var bookingResponse = JsonConvert.DeserializeObject<BookingResponse>(content);
+
+                _logger.LogInfo("Booking request processed successfully.");
                 return bookingResponse;
             }
-            
+
+            _logger.LogError($"An error occurred while processing booking request");
+
             return null;
         }
 
         public async Task<CancellationResponse> CancelVisitAsync(CancellationRequest request)
         {
             // Construct the URL based on the request parameters
-            var baseUrl = "https://3aff8cc7-91f8-4577-bef3-e566d6c41d74.mock.pstmn.io/bookVisit";
+            var baseUrl = "https://fe8f4f5e-f5c2-48b6-974c-097f4cec3de0.mock.pstmn.io/bookVisit";
             var queryParams = new Dictionary<string, string>
             {
                 { "BookingID", request.BookingId.ToString() }
@@ -94,9 +91,46 @@ namespace Services
             {
                 var content = await response.Content.ReadAsStringAsync();
                 var cancellationResponse = JsonConvert.DeserializeObject<CancellationResponse>(content);
+
+                _logger.LogInfo("Cancellation request processed successfully.");
+
                 return cancellationResponse;
             }
+
+            _logger.LogError($"An error occurred while processing cancellation request");
+
             return null;
+        }
+
+        private string ExtractPatientName(string fullName)
+        {
+            return fullName.Split(' ')[0];
+        }
+
+        private string ExtractPatientSurname(string fullName)
+        {
+            var nameParts = fullName.Split(' ');
+            return nameParts.Length > 1 ? nameParts[1] : "";
+        }
+
+        private async Task<VisitSlot> GetAvailableSlotAsync(int doctorId, string startTime, string endTime)
+        {
+            var slots = await _doctorService.GetAvailableSlotsAsync(doctorId);
+
+            return slots.FirstOrDefault(s =>
+                s.StartTimeUtcString == startTime &&
+                s.EndTimeUtcString == endTime &&
+                s.DoctorId == doctorId);
+        }
+
+        private string GetFormattedDateTime(string date, string time)
+        {
+            return $"{date}T{time}:00.000Z";
+        }
+
+        private string FormatDate(string date)
+        {
+            return DateTime.ParseExact(date, "dd/MM/yyyy", null).ToString("yyyy-MM-dd");
         }
 
     }

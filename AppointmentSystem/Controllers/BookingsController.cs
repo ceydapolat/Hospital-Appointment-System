@@ -20,19 +20,12 @@ namespace AppointmentSystem.Controllers
         [HttpPost("book")]
         public async Task<IActionResult> BookVisit(BookingRequest request)
         {
-            try
-            {
-                var result = await _bookingService.BookVisitAsync(request);
+            var result = await _bookingService.BookVisitAsync(request);
 
-                if (!result.Status)
-                    return BadRequest(new { message = "NO_SLOT_FOUND" });
+            if (!result.Status)
+                return BadRequest(new { message = "NO_SLOT_FOUND" });
 
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            return Ok(result);
         }
 
         [HttpPost("cancel")]
@@ -41,17 +34,8 @@ namespace AppointmentSystem.Controllers
             if (request.BookingId == 0)
                 return new JsonResult(new { status = false });
 
-            try
-            {
-                var result = await _bookingService.CancelVisitAsync(request);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-
-
+            var result = await _bookingService.CancelVisitAsync(request);
+            return Ok(result);
         }
     }
 }

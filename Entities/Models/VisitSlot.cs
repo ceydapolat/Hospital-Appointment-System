@@ -4,8 +4,8 @@ using Newtonsoft.Json;
 
 namespace Entities.Models
 {
-	public class VisitSlot
-	{
+    public class VisitSlot
+    {
         public int DoctorId { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
@@ -23,8 +23,11 @@ namespace Entities.Models
         // Custom method to convert UTC date/time strings to DateTime objects
         public void ParseUtcTimes()
         {
-            StartTime = DateTime.ParseExact(StartTimeUtcString, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
-            EndTime = DateTime.ParseExact(EndTimeUtcString, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+            if (!string.IsNullOrEmpty(StartTimeUtcString) && !string.IsNullOrEmpty(EndTimeUtcString))
+            {
+                StartTime = DateTime.ParseExact(StartTimeUtcString, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+                EndTime = DateTime.ParseExact(EndTimeUtcString, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+            }
         }
     }
 }
